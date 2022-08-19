@@ -2,5 +2,5 @@
 A package to automatically conduct storm surge validation
 
 ***
-Work in progress...
+This is a work in progress...
 ***
