@@ -9,7 +9,7 @@ import re
 import logging
 import os
 
-# User input storm number: al******
+# User input storm number: al****** (Ex. Hurricane elsa should be al052021)
 number = input("Please input the storm number (format: al______): ")
 
 
