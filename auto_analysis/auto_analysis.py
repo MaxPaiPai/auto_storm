@@ -141,7 +141,6 @@ if __name__ == "__main__":
     # Set the threshold of logger to DEBUG 
     logger.setLevel(logging.DEBUG) 
 
-
     storm = generate_storm_data(number)
     event = len(storm)
 
