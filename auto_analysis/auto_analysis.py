@@ -9,17 +9,12 @@ import re
 import logging
 import os
 
-# User input storm number: al****** (Ex. Hurricane elsa should be al052021)
-number = input("Please input the storm number (format: al______): ")
-
-
-def generate_time(storm):
+def generate_time(storm, user_in):
     """
     @param: storm, pandas dataframe
-    @return: (s_date, e_date, delta_days), tuple
-    """
+    @return: tuple: (s_date, e_date, delta_days, before_landfall, after_landfall, user_in)
+    """ 
     try:
-        user_in = str(input("Please input the landfall time, format: year+month+date+time (no space in between): "))
 
         land_y = int(user_in[0:4])
         land_m = int(user_in[4:6])
@@ -31,10 +26,10 @@ def generate_time(storm):
         data_start_d = int(storm[0][2][7:9])
         data_start_t = int(storm[0][2][9:])
 
-        data_end_y = int(storm[event-1][2][1:5])
-        data_end_m = int(storm[event-1][2][5:7])
-        data_end_d = int(storm[event-1][2][7:9])
-        data_end_t = int(storm[event-1][2][9:])
+        data_end_y = int(storm[len(storm)-1][2][1:5])
+        data_end_m = int(storm[len(storm)-1][2][5:7])
+        data_end_d = int(storm[len(storm)-1][2][7:9])
+        data_end_t = int(storm[len(storm)-1][2][9:])
 
         l_date = datetime(land_y, land_m, land_d, land_t)
         s_date = datetime(data_start_y, data_start_m, data_start_d, data_start_t)
@@ -44,7 +39,7 @@ def generate_time(storm):
         after_landfall = float((e_date - l_date).total_seconds()/86400)
         delta_days = float((e_date - s_date).total_seconds()/86400)
 
-        return (s_date, e_date, delta_days, before_landfall, after_landfall)
+        return (s_date, e_date, delta_days, round(before_landfall,2), round(after_landfall,2), user_in)
     except:
         print('Something was wrong with data...')
 
@@ -63,8 +58,8 @@ def convert_km(lat_1, lng_1, lat_2, lng_2):
     return distance
 
 
-def generate_gauge(metadata):
-
+def generate_gauge(metadata, storm):
+# Return: dictionary: key: name, [id, lat, lng, distance to eye]
     location = []
     for i in range(len(storm)):
         lat_raw = re.findall(r'\d+',storm[i][6])
@@ -76,15 +71,28 @@ def generate_gauge(metadata):
 
     gauge = {}
     for i in location:
-        for j in range(len(station_meta)):
-            if (i[0]-0.5)<station_meta['stations'][j]['lat']<(i[0]+0.5):
-                if (-i[1]-1)<station_meta['stations'][j]['lng']<(-i[1]+1):
-                    if station_meta['stations'][j]['name'] not in gauge:
-                        gauge[station_meta['stations'][j]['name']] = [station_meta['stations'][j]['id'],
-                        station_meta['stations'][j]['lat'],station_meta['stations'][j]['lng'], 
-                        round(convert_km(station_meta['stations'][j]['lat'], station_meta['stations'][j]['lng'], i[0], -i[1]), 3)]
+        for j in range(len(metadata)):
+            if (i[0]-0.5)<metadata['stations'][j]['lat']<(i[0]+0.5):
+                if (-i[1]-1)<metadata['stations'][j]['lng']<(-i[1]+1):
+                    if metadata['stations'][j]['name'] not in gauge:
+                        gauge[metadata['stations'][j]['name']] = [metadata['stations'][j]['id'],
+                        round(metadata['stations'][j]['lat'],2),round(metadata['stations'][j]['lng'],2), 
+                        round(convert_km(metadata['stations'][j]['lat'], metadata['stations'][j]['lng'], i[0], -i[1]), 3)]
+
+    # for item in gauge: (change distance to the cloest distance)
 
 
+
+
+
+
+
+
+
+
+        
+            
+                       
     return gauge
 
 
@@ -130,6 +138,9 @@ def generate_station_data():
 
 
 if __name__ == "__main__":
+    # User input storm number: al******
+    number = input("Please input the storm number (format: al______): ")
+
 # Create and configure logger in current working directory with name 'auto_analysis_stormnumber.log'
     logging.basicConfig(filename=str(os.path.dirname(__file__)+'/auto_analysis_'+str(number)+'.log'), 
                         format='%(asctime)s %(message)s', 
@@ -141,20 +152,24 @@ if __name__ == "__main__":
     # Set the threshold of logger to DEBUG 
     logger.setLevel(logging.DEBUG) 
 
+
     storm = generate_storm_data(number)
-    event = len(storm)
+    
 
     # Log storm time info
-    report_time = generate_time(storm)
+    user_in = str(input("Please input the landfall time, format: year+month+date+time (no space in between): "))
+    report_time = generate_time(storm, user_in)
     logging.info('===============Report of Time===============')
     logging.info('\n')
     logging.info(f'Data for the storm is available starting at {report_time[0]}')
     logging.info('\n')
     logging.info(f'Data for the storm is NOT available after {report_time[1]}')
     logging.info('\n')
+    logging.info(f'Landfall time you selected was {datetime(int(report_time[5][0:4]),int(report_time[5][4:6]),int(report_time[5][6:8]),int(report_time[5][8:]))}')
+    logging.info('\n')
     logging.info(f'{report_time[2]} days are ready to be simulated')
-    logging.info(f'{round(report_time[3],2)} days before landfall')
-    logging.info(f'{round(report_time[4],2)} days after landfall')
+    logging.info(f'{report_time[3]} days before landfall')
+    logging.info(f'{report_time[4]} days after landfall')
     logging.info('\n')
     logging.info('============================================')
 
@@ -162,11 +177,13 @@ if __name__ == "__main__":
 
     station_meta = generate_station_data()
     
-    gauge = generate_gauge(station_meta)
+    gauge = generate_gauge(station_meta, storm)
     
     logging.info('==============Search for Gauge==============')
     for item in gauge:
-        logging.info(f'{item, gauge[item]}')
+        logging.info('\n')
+        logging.info(f'{item}: Station ID: {gauge[item][0]}, Latitude: {gauge[item][1]}, Longitude: {gauge[item][2]}, Distance: {gauge[item][3]} kilometers')
+        logging.info('\n')
     logging.info('==========================================')
 
     logging.info('\n')
