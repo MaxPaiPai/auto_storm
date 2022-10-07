@@ -11,15 +11,10 @@ import os
 
 def generate_time(storm, user_in):
     """
-    @param: storm data in pandas series, landfall time in strings
+    @param: storm data in pandas series, landfall time in strings, format: date/month/year/hour
     @return: tuple of (s_date, e_date, delta_days, before_landfall, after_landfall, user_in)
     """ 
     try:
-
-        land_y = int(user_in[0:4])
-        land_m = int(user_in[4:6])
-        land_d = int(user_in[6:8])
-        land_t = int(user_in[8:])
 
         data_start_y = int(storm[0][2][1:5])
         data_start_m = int(storm[0][2][5:7])
@@ -31,7 +26,7 @@ def generate_time(storm, user_in):
         data_end_d = int(storm[len(storm)-1][2][7:9])
         data_end_t = int(storm[len(storm)-1][2][9:])
 
-        l_date = datetime(land_y, land_m, land_d, land_t)
+        l_date = l_date = pd.to_datetime(user_in)
         s_date = datetime(data_start_y, data_start_m, data_start_d, data_start_t)
         e_date = datetime(data_end_y, data_end_m, data_end_d, data_end_t)
 
@@ -162,7 +157,7 @@ if __name__ == "__main__":
     
 
     # Log storm time info
-    user_in = str(input("Please input the landfall time, format: year+month+date+time (no space in between): "))
+    user_in = str(input("Please input the landfall time, format: date/month/year/hour: "))
     report_time = generate_time(storm, user_in)
     logging.info('===============Report of Time===============')
     logging.info('\n')
@@ -170,7 +165,7 @@ if __name__ == "__main__":
     logging.info('\n')
     logging.info(f'Data for the storm is NOT available after {report_time[1]}')
     logging.info('\n')
-    logging.info(f'Landfall time you selected was {datetime(int(report_time[5][0:4]),int(report_time[5][4:6]),int(report_time[5][6:8]),int(report_time[5][8:]))}')
+    logging.info(f'Landfall time you selected was {pd.to_datetime(report_time[5])}')
     logging.info('\n')
     logging.info(f'{report_time[2]} days are ready to be simulated')
     logging.info(f'{report_time[3]} days before landfall')
