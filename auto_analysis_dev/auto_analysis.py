@@ -11,8 +11,8 @@ import os
 
 def generate_time(storm, user_in):
     """
-    @param: storm, pandas dataframe
-    @return: tuple: (s_date, e_date, delta_days, before_landfall, after_landfall, user_in)
+    @param: storm data in pandas series, landfall time in strings
+    @return: tuple of (s_date, e_date, delta_days, before_landfall, after_landfall, user_in)
     """ 
     try:
 
@@ -44,7 +44,10 @@ def generate_time(storm, user_in):
         print('Something was wrong with data...')
 
 def convert_km(lat_1, lng_1, lat_2, lng_2):
-
+    """
+    @param: two locations' coordinates in degree
+    @return: distance between two locations in kilometers
+    """ 
     radius = 6371.0
 
     d_lat = radians(lat_2) - radians(lat_1)
@@ -59,7 +62,10 @@ def convert_km(lat_1, lng_1, lat_2, lng_2):
 
 
 def generate_gauge(metadata, storm):
-# Return: dictionary: key: name, [id, lat, lng, distance to eye]
+    """
+    @param: stations metadata, storm specific data
+    @return: a dictionary of recommended gauges and their specific information. Gauge names are key and [station id, latitude, longitude, distance to storm eye] are values
+    """ 
     location = []
     for i in range(len(storm)):
         lat_raw = re.findall(r'\d+',storm[i][6])
@@ -87,7 +93,10 @@ def generate_gauge(metadata, storm):
 
 
 def generate_significance(gauge, t0, tf):
-
+    """
+    @param: gauge information in dictionary format, storm data start time, storm data end time
+    @return: a Pandas dataframe of each gauge's maximum surge level and distance to storm eye for comparison
+    """ 
     max_surge = {}
     max_surge_list = []
     dis_list = []
@@ -112,7 +121,10 @@ def generate_significance(gauge, t0, tf):
  
 
 def generate_storm_data(number):
-
+    """
+    @param: storm number
+    @return: storm specific data, data in Pandas series format
+    """ 
     storm = pd.DataFrame(pd.read_csv(str('http://ftp.nhc.noaa.gov/atcf/archive/2021/b'+number+'.dat.gz'),
             sep=':', header=None,))
 
@@ -121,7 +133,10 @@ def generate_storm_data(number):
     return storm
 
 def generate_station_data():
-
+    """
+    @param: none
+    @return: Metadata for NOAA water level gauges, data in Pandas dataframe format
+    """ 
     station_meta = pd.read_json('https://api.tidesandcurrents.noaa.gov/mdapi/prod/webapi/stations.json')
 
     return station_meta
