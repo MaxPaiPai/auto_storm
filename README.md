@@ -1,8 +1,8 @@
-# auto_storm
+# Auto_storm overview:
 A python program to automatically search and gather key information for storm surge modeling and validation projects
 
 
-# background
+## Background and motivation:
 With the rapid advancement of computational science, we are able to construct all kinds of natural systems using mathematical models and numerical methods. Coastal hazards, which lies under the domain, is considered to be a major concern because nearly 40% of the world population reside close to the coastline. Among all coastal hazards, the most common, wide-spread hazard is the storm surge, which is the abnormal and significant rise of sea water level caused by storm systems like hurricanes and typhoons. Storm surges can be disastrous to coastal communities.
 
 The **Clawpack** (Conservation Law Package) software suite is designed to solve nonlinear conservation law problems, balance laws, and many more other hyperbolic partial differential equations which are not necessarily in conservation form. **GeoClaw**, a variant of the Clawpack software, is developed to specifically solve the two-dimensional shallow water equations over topography for modeling various geophysical flows like hurricane, tsunami, or dam break. 
